@@ -11,7 +11,7 @@ int main(int argc, char**argv) {
   FILE *fptr = fopen(argv[1],"r");
   if(fptr == NULL){
     fprintf(stderr,"failed to open file input");
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
   }else if(fgetc(fptr) != EOF){ 
     FILE *out_fptr = fopen(argv[2],"w");
     if(out_fptr == NULL){
@@ -25,14 +25,14 @@ int main(int argc, char**argv) {
     }
 
     FILE *out_fptr3 = fopen(argv[4],"w+");
-    if(out_fptr2 == NULL){
+    if(out_fptr3 == NULL){
       fprintf(stderr,"failed to open file output2");
       return EXIT_FAILURE;
     }
 
     //CODE
-    print_weight(fptr,out_fptr,weight); 
-    priority_queue_by_weight(out_fptr2,weight,out_fptr3);
+    print_weight(fptr,weight); 
+    priority_queue_by_weight(weight,out_fptr,out_fptr2);
 
     fclose(out_fptr3);
     fclose(out_fptr2);

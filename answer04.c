@@ -9,15 +9,14 @@ lnode * Enque_tree(lnode ** head, lnode *new_node);
 lnode * Combine_two_nodes(lnode* new_one,lnode* new_two);
 lnode * Dequeue(lnode ** head);
 void destroy_list(lnode* head);
-void print_list(lnode *head, FILE* print);
 void print_tree(lnode *head, FILE* print,lnode **new);
 void stack_pop(lnode **head);
 void stack_push_end(lnode **head, int path);
+void post_order_char_print(lnode *head,FILE*fptr);
 
-void print_weight(FILE*fptr,FILE* out_fptr,long int*weight){
+void print_weight(FILE*fptr,long int*weight){
   //VARIABLES
   int int_ch;
-  int i;
   char ch;
 
   //FILE OPERATIONS
@@ -26,15 +25,12 @@ void print_weight(FILE*fptr,FILE* out_fptr,long int*weight){
     int_ch = (int) ch; 
     weight[int_ch]++;
   }
-  //PRINTING THE WIGHT TO THE GIVEN FILE OUTPUT
-  for(i = 0; i <256; i++){
-    fprintf(out_fptr,"%ld\n",weight[i]);
-  }
 }
 
-void priority_queue_by_weight(FILE*fptr, long int*weight,FILE*fptr2){
+void priority_queue_by_weight(long int*weight,FILE*fptr,FILE*fptr2){
   lnode *head = NULL;
   lnode *new_node =NULL;
+  lnode *new = NULL;
   int total_weight = 0;
   int i;
   //print_list(head);
@@ -46,8 +42,6 @@ void priority_queue_by_weight(FILE*fptr, long int*weight,FILE*fptr2){
   }
   if(head == NULL)
     return;
-  print_list(head,fptr);
-
   lnode *node_one;
   lnode *node_two;
   lnode *node_comb;
@@ -55,13 +49,12 @@ void priority_queue_by_weight(FILE*fptr, long int*weight,FILE*fptr2){
   while(head->weight != total_weight){
     node_one = Dequeue(&head);
     node_two = Dequeue(&head);
-    //printf(".%c  .%c ",(char)node_one->ch,(char)node_two->ch);
     node_comb = Combine_two_nodes(node_one,node_two);
     Enque_tree(&head,node_comb);
-    //printf("|head.%c cur_w %ld| ",(char)head->ch,head->weight);
   }
-  lnode *new = NULL;
-  print_tree(head, fptr2,&new);
+  print_tree(head,fptr,&new);
+  post_order_char_print(head,fptr2);
+  fprintf(fptr2,"0");//adding the additional 0 requried that indicates the end of the topology
   destroy_list(head);
 }
 
@@ -112,28 +105,11 @@ lnode* Enqueue(lnode **head,int ch,long int weight){
 
 
 void destroy_list(lnode *head){
-  /*lnode *temp = head;
-  while(head != NULL){
-    temp = head->linked;
-    head->linked = NULL;
-    free(head);
-    head = temp;
-  }*/
   if(head==NULL)
     return;
   destroy_list(head->r_node);
   destroy_list(head->l_node);
   free(head);
-}
-
-
-void print_list(lnode *head,FILE* fptr){
-  while(head != NULL){
-    fprintf(fptr,"%c:%ld",head->ch,head->weight);
-    fprintf(fptr, "->");
-    head = head->linked;
-  } 
-  fprintf(fptr, "NULL\n");
 }
 
 lnode * Dequeue(lnode ** head){
@@ -198,15 +174,28 @@ void print_tree(lnode *head, FILE* print,lnode **new){
 
 }
 
+void post_order_char_print(lnode *head,FILE* fptr){
+  if(head->l_node == NULL && head->r_node == NULL){
+    fprintf(fptr,"1");
+    fprintf(fptr,"%c",(char)head->ch);
+    return;
+  }else if(head->l_node == NULL || head->r_node == NULL){
+    fprintf(stderr,"unexpected node reached");
+    return;
+  }
+  post_order_char_print(head->l_node,fptr);
+  post_order_char_print(head->r_node,fptr);
+  fprintf(fptr,"0");
+}
 
 void stack_push_end(lnode **head, int path){
   lnode *temp = *head;
   lnode* new_car = n_construct(2,(long int)path);
-  if(temp == NULL){
-    *head = new_car;
+  if(new_car == NULL){
     return;
   }
-  if(new_car == NULL){
+  if(temp == NULL){
+    *head = new_car;
     return;
   }
   while(temp->linked != NULL)

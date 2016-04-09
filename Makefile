@@ -11,7 +11,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET)
 
 test:
-	$(VALGRIND)=./logfile ./pe10 lorum lorum.count lorum.sorted lorum.huffman
+	$(VALGRIND)=./logfile ./pa04 lorum lorum.huffman lorum.char lorum.bit
 
 .c.o:
 	$(GCC) $(CFLAGS) -c $*.c
