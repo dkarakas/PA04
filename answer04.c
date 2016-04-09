@@ -62,7 +62,6 @@ void priority_queue_by_weight(long int*weight,FILE*fptr,FILE*fptr2,FILE*fptr3){
   unsigned char ch = 0x00;
   ch = post_order_bit(head,fptr3,&written_char,&ch);
   if(written_char != 0){
-    fprintf(stderr,"check");
     fprintf(fptr3,"%c",ch);
   }
   destroy_list(head);
