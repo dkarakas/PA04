@@ -3,6 +3,8 @@
 #include<string.h>
 #include"answer04.h"
 
+#define CHAR_SIZE 8
+
 lnode * n_construct(int ch, long int weight);
 lnode * Enqueue(lnode ** head,int ch, long int weight);
 lnode * Enque_tree(lnode ** head, lnode *new_node);
@@ -13,6 +15,7 @@ void print_tree(lnode *head, FILE* print,lnode **new);
 void stack_pop(lnode **head);
 void stack_push_end(lnode **head, int path);
 void post_order_char_print(lnode *head,FILE*fptr);
+char post_order_bit(lnode *head,FILE*fptr,int *current_bits_written,unsigned char (*current_char));
 
 void print_weight(FILE*fptr,long int*weight){
   //VARIABLES
@@ -27,7 +30,7 @@ void print_weight(FILE*fptr,long int*weight){
   }
 }
 
-void priority_queue_by_weight(long int*weight,FILE*fptr,FILE*fptr2){
+void priority_queue_by_weight(long int*weight,FILE*fptr,FILE*fptr2,FILE*fptr3){
   lnode *head = NULL;
   lnode *new_node =NULL;
   lnode *new = NULL;
@@ -55,6 +58,13 @@ void priority_queue_by_weight(long int*weight,FILE*fptr,FILE*fptr2){
   print_tree(head,fptr,&new);
   post_order_char_print(head,fptr2);
   fprintf(fptr2,"0");//adding the additional 0 requried that indicates the end of the topology
+  int written_char = 0;
+  unsigned char ch = 0x00;
+  ch = post_order_bit(head,fptr3,&written_char,&ch);
+  if(written_char != 0){
+    fprintf(stderr,"check");
+    fprintf(fptr3,"%c",ch);
+  }
   destroy_list(head);
 }
 
@@ -186,6 +196,61 @@ void post_order_char_print(lnode *head,FILE* fptr){
   post_order_char_print(head->l_node,fptr);
   post_order_char_print(head->r_node,fptr);
   fprintf(fptr,"0");
+}
+
+char post_order_bit(lnode *head,FILE*fptr,int *current_bits_written,unsigned char *current_char){//carry bits from unwritten part
+  int i = 0;
+  unsigned char add_bit;
+  //unsigned char writting = current_char;
+  if(head->l_node == NULL && head->r_node == NULL){
+    //printing 1 bit
+    add_bit = 1 << (CHAR_SIZE - (*current_bits_written) -1); 
+    (*current_char) = (*current_char) | add_bit; 
+    (*current_bits_written)++;
+    if((*current_bits_written) % 8 == 0){ 
+      fprintf(fptr,"%c",(*current_char));
+      (*current_bits_written) = 0;
+      (*current_char) = 0x00;
+    }
+    char char_from_tree = head->ch;
+    unsigned char mask = 1 << (CHAR_SIZE - 1);
+    for(i = 0; i < CHAR_SIZE; i++){
+      int result = char_from_tree & mask;    
+      
+      if(result == 0){
+        (*current_bits_written)++;
+        if((*current_bits_written) % 8 == 0){ 
+          fprintf(fptr,"%c",(*current_char));
+          (*current_bits_written) = 0;
+          (*current_char) = 0x00;
+        }
+      }else if(result != 0){
+        add_bit =  1 << (CHAR_SIZE - (*current_bits_written) -1); 
+        (*current_char) = (*current_char) | add_bit; 
+        (*current_bits_written)++;
+        if((*current_bits_written) % 8 == 0){ 
+          fprintf(fptr,"%c",(*current_char));
+          (*current_bits_written) = 0;
+          (*current_char) = 0x00;
+
+        }
+      }
+      mask = mask >> 1;   
+    }
+    return (*current_char);
+  }else if(head->l_node == NULL || head->r_node == NULL){
+    fprintf(stderr,"unexpected node reached");
+    return (*current_char);
+  }
+  post_order_bit(head->l_node,fptr,current_bits_written,current_char);
+  post_order_bit(head->r_node,fptr,current_bits_written,current_char);
+  (*current_bits_written)++;
+  if((*current_bits_written) % 8 == 0){ 
+    fprintf(fptr,"%c",(*current_char));
+    (*current_bits_written) = 0;
+    (*current_char) = 0x00;
+  }
+  return (*current_char);
 }
 
 void stack_push_end(lnode **head, int path){

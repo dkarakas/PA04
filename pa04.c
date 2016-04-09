@@ -32,7 +32,7 @@ int main(int argc, char**argv) {
 
     //CODE
     print_weight(fptr,weight); 
-    priority_queue_by_weight(weight,out_fptr,out_fptr2);
+    priority_queue_by_weight(weight,out_fptr,out_fptr2,out_fptr3);
 
     fclose(out_fptr3);
     fclose(out_fptr2);
